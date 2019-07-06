@@ -1,3 +1,12 @@
 [submodule "leptonica"]
 	path = leptonica
 	url = https://github.com/fishjam/leptonica.git
+[submodule "tesseract"]
+	path = tesseract
+	url = https://github.com/fishjam/tesseract.git
+[submodule "opencv"]
+	path = opencv
+	url = https://github.com/fishjam/opencv.git
+[submodule "FFmpeg"]
+	path = FFmpeg
+	url = https://github.com/fishjam/FFmpeg.git
