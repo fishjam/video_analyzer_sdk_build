@@ -1,12 +1,16 @@
 [submodule "leptonica"]
 	path = leptonica
 	url = https://github.com/fishjam/leptonica.git
+	branch = branch_1.74.4
 [submodule "tesseract"]
 	path = tesseract
 	url = https://github.com/fishjam/tesseract.git
+	branch = 3.05
 [submodule "opencv"]
 	path = opencv
 	url = https://github.com/fishjam/opencv.git
+	branch = branch_3.4.2_fixbug
 [submodule "FFmpeg"]
 	path = FFmpeg
 	url = https://github.com/fishjam/FFmpeg.git
+	branch = branch_n4.0.4
