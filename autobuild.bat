@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 setlocal 
 
 rem ###############################################################################
@@ -66,7 +66,7 @@ if "%BUILD_TESSERACT%" == "1" (
 
     cmake ^
         -G %CMAKE_GENERATOR% ^
-        -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^	
+        -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
         -DBUILD_TRAINING_TOOLS=OFF ^
         -DLeptonica_Dir=%ROOT_DIR%result\win\cmake ^
         -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
@@ -92,7 +92,7 @@ if "%BUILD_OPENCV%" == "1" (
 
     cmake ^
         -G %CMAKE_GENERATOR% ^
-        -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^	
+        -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
         -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
         -DBUILD_SHARED_LIBS=ON ^
         -DBUILD_opencv_world=ON ^
