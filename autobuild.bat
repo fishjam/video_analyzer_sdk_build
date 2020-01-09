@@ -3,13 +3,11 @@ setlocal
 
 rem ###############################################################################
 rem usage:
-rem   autobuild [action] [build_type]
-rem      action: [build] | clean
+rem   autobuild [build_type]
 rem      build_type: [Release] | Debug
 rem ###############################################################################
 
 set ROOT_DIR=%~dp0
-set ACTION=build 
 set BUILD_TYPE=Release
 
 set CMAKE_GENERATOR="Visual Studio 14 2015 Win64"
@@ -20,17 +18,7 @@ set TESSERACT_BRANCH=3.05
 set BUILD_OPENCV=1
 set OPENCV_BRANCH=branch_3.4.2_fixbug
 
-
-if not "%1" == "" set ACTION=%1
-if "%ACTION%" == "clean" (
-  cd %ROOT_DIR%opencv && rm -rf build
-  cd %ROOT_DIR%leptonica && rm -rf build
-  cd %ROOT_DIR%tesseract && rm -rf build
-  goto CLEAN
-)
-
-if not "%2" == "" set BUILD_TYPE=%2
-
+if not "%1" == "" set BUILD_TYPE=%1
 
 if "%BUILD_LEPTONICA%" == "1" (
     rem now will build for leptonica
@@ -38,8 +26,8 @@ if "%BUILD_LEPTONICA%" == "1" (
     git checkout %LEPTONICA_BRANCH%
     if not "%ERRORLEVEL%" == "0" goto ERROR
     
-    mkdir build
-    cd build
+    mkdir build_%BUILD_TYPE%
+    cd build_%BUILD_TYPE%
     if not "%ERRORLEVEL%" == "0" goto ERROR
 
     cmake ^
@@ -60,8 +48,8 @@ if "%BUILD_LEPTONICA%" == "1" (
 if "%BUILD_TESSERACT%" == "1" (
     rem now will build for tesseract
     cd tesseract
-    mkdir build 
-    cd build
+    mkdir build_%BUILD_TYPE% 
+    cd build_%BUILD_TYPE%
     if not "%ERRORLEVEL%" == "0" goto ERROR
 
     cmake ^
@@ -86,8 +74,8 @@ if "%BUILD_OPENCV%" == "1" (
     git checkout %OPENCV_BRANCH%
     if not "%ERRORLEVEL%" == "0" goto ERROR
     
-    mkdir build
-    cd build
+    mkdir build_%BUILD_TYPE%
+    cd build_%BUILD_TYPE%
     if not "%ERRORLEVEL%" == "0" goto ERROR
 
     cmake ^
@@ -118,13 +106,6 @@ endlocal
 pause
 @exit /b 1
 
-:CLEAN
-cd %ROOT_DIR%
-endlocal
-@echo ***************************************************
-@echo Clean Process Done...
-@echo ***************************************************
-@exit /b 0
 
 :DONE
 endlocal
