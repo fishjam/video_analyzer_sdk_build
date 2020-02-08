@@ -10,3 +10,7 @@
 	path = opencv
 	url = https://github.com/fishjam/opencv.git
 	branch = branch_3.4.2_fixbug
+[submodule "vmaf"]
+	path = vmaf
+	url = https://github.com/fishjam/vmaf.git
+	branch = master
