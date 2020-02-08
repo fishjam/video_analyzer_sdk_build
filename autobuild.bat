@@ -11,12 +11,16 @@ set ROOT_DIR=%~dp0
 set BUILD_TYPE=Release
 
 set CMAKE_GENERATOR="Visual Studio 14 2015 Win64"
+set VS_DEVENV="%VS140COMNTOOLS%/../IDE/devenv.com"
+
 set BUILD_LEPTONICA=1
 set LEPTONICA_BRANCH=branch_1.74.4
 set BUILD_TESSERACT=1
 set TESSERACT_BRANCH=3.05
 set BUILD_OPENCV=1
 set OPENCV_BRANCH=branch_3.4.2_fixbug
+set BUILD_VMAF=1
+set VMAF_BRANCH=dynamic_win
 
 if not "%1" == "" set BUILD_TYPE=%1
 
@@ -94,6 +98,24 @@ if "%BUILD_OPENCV%" == "1" (
     if not "%ERRORLEVEL%" == "0" goto ERROR
     
     cd %ROOT_DIR%
+)
+
+if "%BUILD_VMAF%" == "1" (
+      cd vmaf
+      git checkout %VMAF_BRANCH%
+      if not "%ERRORLEVEL%" == "0" goto ERROR
+
+      %VS_DEVENV% vmaf.sln /build "%BUILD_TYPE%|x64"
+      if not "%ERRORLEVEL%" == "0" goto ERROR
+
+      mkdir %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
+      xcopy /v /y wrapper\src\libvmaf.h %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
+      if not "%ERRORLEVEL%" == "0" goto ERROR
+
+      xcopy /v /y x64\%BUILD_TYPE%\*.lib %ROOT_DIR%result\win\%BUILD_TYPE%\lib
+      if not "%ERRORLEVEL%" == "0" goto ERROR
+
+      cd %ROOT_DIR%
 )
 
 goto DONE

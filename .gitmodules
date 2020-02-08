@@ -13,4 +13,4 @@
 [submodule "vmaf"]
 	path = vmaf
 	url = https://github.com/fishjam/vmaf.git
-	branch = master
+	branch = dynamic_win
