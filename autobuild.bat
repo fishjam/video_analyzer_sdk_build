@@ -19,6 +19,7 @@ set BUILD_TESSERACT=1
 set TESSERACT_BRANCH=3.05
 set BUILD_OPENCV=1
 set OPENCV_BRANCH=branch_3.4.2_fixbug
+set OPENCV_CONTRIB_BRANCH=3.4.2
 set BUILD_VMAF=1
 set VMAF_BRANCH=dynamic_win
 
@@ -74,7 +75,11 @@ if "%BUILD_TESSERACT%" == "1" (
 
 if "%BUILD_OPENCV%" == "1" (
     rem now will build for opencv
-    cd opencv
+    cd %ROOT_DIR%\opencv_contrib
+    git checkout %OPENCV_CONTRIB_BRANCH%
+    if not "%ERRORLEVEL%" == "0" goto ERROR
+    
+    cd %ROOT_DIR%\opencv
     git checkout %OPENCV_BRANCH%
     if not "%ERRORLEVEL%" == "0" goto ERROR
     
@@ -86,6 +91,8 @@ if "%BUILD_OPENCV%" == "1" (
         -G %CMAKE_GENERATOR% ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
         -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
+        -DOPENCV_EXTRA_MODULES_PATH=%ROOT_DIR%\opencv_contrib\modules ^
+        -DOPENCV_ENABLE_NONFREE=ON ^
         -DBUILD_SHARED_LIBS=ON ^
         -DBUILD_opencv_world=ON ^
         -DBUILD_TESTS=OFF ^
