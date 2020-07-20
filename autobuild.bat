@@ -27,10 +27,35 @@ if not "%1" == "" set BUILD_TYPE=%1
 
 if "%BUILD_LEPTONICA%" == "1" (
     rem now will build for leptonica
-    cd leptonica
+    cd cd %ROOT_DIR%leptonica
     git checkout %LEPTONICA_BRANCH%
     if not "%ERRORLEVEL%" == "0" goto ERROR
     
+    rem build zlib for leptonica 
+    cd %ROOT_DIR%leptonica\libs\zlib-1.2.11
+    mkdir build_%BUILD_TYPE%
+    cd build_%BUILD_TYPE%
+    cmake ^
+        -G %CMAKE_GENERATOR% ^
+        -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
+        -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
+        ..
+        
+    cmake --build . --config %BUILD_TYPE% --target INSTALL
+    
+    rem build png for leptonica 
+    cd %ROOT_DIR%leptonica\libs\lpng1637
+    mkdir build_%BUILD_TYPE%
+    cd build_%BUILD_TYPE%
+    cmake ^
+        -G %CMAKE_GENERATOR% ^
+        -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
+        -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
+        ..
+    cmake --build . --config %BUILD_TYPE% --target INSTALL
+    
+    rem now build for leptonica
+    cd %ROOT_DIR%leptonica
     mkdir build_%BUILD_TYPE%
     cd build_%BUILD_TYPE%
     if not "%ERRORLEVEL%" == "0" goto ERROR
@@ -75,11 +100,11 @@ if "%BUILD_TESSERACT%" == "1" (
 
 if "%BUILD_OPENCV%" == "1" (
     rem now will build for opencv
-    cd %ROOT_DIR%\opencv_contrib
+    cd %ROOT_DIR%opencv_contrib
     git checkout %OPENCV_CONTRIB_BRANCH%
     if not "%ERRORLEVEL%" == "0" goto ERROR
     
-    cd %ROOT_DIR%\opencv
+    cd %ROOT_DIR%opencv
     git checkout %OPENCV_BRANCH%
     if not "%ERRORLEVEL%" == "0" goto ERROR
     
@@ -91,14 +116,15 @@ if "%BUILD_OPENCV%" == "1" (
         -G %CMAKE_GENERATOR% ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
         -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
-        -DOPENCV_EXTRA_MODULES_PATH=%ROOT_DIR%\opencv_contrib\modules ^
+        -DOPENCV_EXTRA_MODULES_PATH=%ROOT_DIR%opencv_contrib\modules ^
         -DOPENCV_ENABLE_NONFREE=ON ^
         -DBUILD_SHARED_LIBS=ON ^
+        -DBUILD_WITH_STATIC_CRT=ON ^
         -DBUILD_opencv_world=ON ^
         -DBUILD_TESTS=OFF ^
         -DBUILD_EXAMPLES=OFF ^
         ..
-        
+
     if not "%ERRORLEVEL%" == "0" goto ERROR
 
     cmake --build . --config %BUILD_TYPE% --target INSTALL
@@ -114,7 +140,7 @@ if "%BUILD_VMAF%" == "1" (
 
       %VS_DEVENV% vmaf.sln /build "%BUILD_TYPE%|x64"
       if not "%ERRORLEVEL%" == "0" goto ERROR
-
+      
       mkdir %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
       xcopy /v /y wrapper\src\libvmaf.h %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
       if not "%ERRORLEVEL%" == "0" goto ERROR
