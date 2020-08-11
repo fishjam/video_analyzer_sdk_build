@@ -1,5 +1,5 @@
 rem @echo off
-setlocal 
+setlocal enabledelayedexpansion
 
 rem ###############################################################################
 rem usage:
@@ -9,10 +9,15 @@ rem ############################################################################
 
 set ROOT_DIR=%~dp0
 set BUILD_TYPE=Release
+if not "%1" == "" set BUILD_TYPE=%1
 
 set CMAKE_GENERATOR="Visual Studio 14 2015 Win64"
 set VS_DEVENV="%VS140COMNTOOLS%/../IDE/devenv.com"
-set PYTHON_PATH=D:/Python36
+
+set PYTHON_PATH=D:/Python3
+if "%BUILD_TYPE%" == "Debug" set PYTHON_LIB_NAME=python38_d.lib
+if "%BUILD_TYPE%" == "Release" set PYTHON_LIB_NAME=python38.lib
+echo "python library value is %PYTHON_PATH%/libs/%PYTHON_LIB_NAME%"
 
 set BUILD_LEPTONICA=1
 set LEPTONICA_BRANCH=branch_1.74.4
@@ -24,14 +29,17 @@ set OPENCV_CONTRIB_BRANCH=3.4.2
 set BUILD_VMAF=1
 set VMAF_BRANCH=dynamic_win
 
-if not "%1" == "" set BUILD_TYPE=%1
+
 
 if "%BUILD_LEPTONICA%" == "1" (
     rem now will build for leptonica
-    cd cd %ROOT_DIR%leptonica
+    cd %ROOT_DIR%leptonica
     git checkout %LEPTONICA_BRANCH%
-    if not "%ERRORLEVEL%" == "0" goto ERROR
-    
+    if not "!ERRORLEVEL!" == "0" (
+      echo "checkout leptonica error"
+      goto ERROR
+    )
+
     rem build zlib for leptonica 
     cd %ROOT_DIR%leptonica\libs\zlib-1.2.11
     mkdir build_%BUILD_TYPE%
@@ -41,8 +49,16 @@ if "%BUILD_LEPTONICA%" == "1" (
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
         -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
         ..
-        
+    if not "!ERRORLEVEL!" == "0" (
+      echo "cmake for zlib error"
+      goto ERROR
+    )
+
     cmake --build . --config %BUILD_TYPE% --target INSTALL
+    if not "!ERRORLEVEL!" == "0" (
+      echo "build for zlib error"
+      goto ERROR
+    )
     
     rem build png for leptonica 
     cd %ROOT_DIR%leptonica\libs\lpng1637
@@ -53,26 +69,38 @@ if "%BUILD_LEPTONICA%" == "1" (
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
         -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
         ..
+    if not "!ERRORLEVEL!" == "0" (
+      echo "cmake for lpng error"
+      goto ERROR
+    )
+
     cmake --build . --config %BUILD_TYPE% --target INSTALL
-    
+    if not "!ERRORLEVEL!" == "0" (
+      echo "build for lpng error"
+      goto ERROR
+    )
+
     rem now build for leptonica
     cd %ROOT_DIR%leptonica
     mkdir build_%BUILD_TYPE%
     cd build_%BUILD_TYPE%
-    if not "%ERRORLEVEL%" == "0" goto ERROR
 
     cmake ^
         -G %CMAKE_GENERATOR% ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
         -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
         ..
-        
-    if not "%ERRORLEVEL%" == "0" goto ERROR
+    if not "!ERRORLEVEL!" == "0" (
+      echo "cmake for leptonica error"
+      goto ERROR
+    )
 
     rem "%VS140COMNTOOLS%/../IDE/devenv.com" videoAnalyzer.sln /build "%BUILD_TYPE%|x64"
     cmake --build . --config %BUILD_TYPE% --target INSTALL
-    if not "%ERRORLEVEL%" == "0" goto ERROR
-    
+    if not "!ERRORLEVEL!" == "0" (
+      echo "build for leptonica error"
+      goto ERROR
+    )
     cd %ROOT_DIR%
 )
 
@@ -81,7 +109,6 @@ if "%BUILD_TESSERACT%" == "1" (
     cd tesseract
     mkdir build_%BUILD_TYPE% 
     cd build_%BUILD_TYPE%
-    if not "%ERRORLEVEL%" == "0" goto ERROR
 
     cmake ^
         -G %CMAKE_GENERATOR% ^
@@ -90,12 +117,17 @@ if "%BUILD_TESSERACT%" == "1" (
         -DLeptonica_Dir=%ROOT_DIR%result\win\cmake ^
         -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
         ..
-        
-    if not "%ERRORLEVEL%" == "0" goto ERROR
+    if not "!ERRORLEVEL!" == "0" (
+      echo "cmake for tesseract error"
+      goto ERROR
+    )
 
     cmake --build . --config %BUILD_TYPE% --target INSTALL
-    if not "%ERRORLEVEL%" == "0" goto ERROR
-    
+    if not "!ERRORLEVEL!" == "0" (
+      echo "build for tesseract error"
+      goto ERROR
+    )
+
     cd %ROOT_DIR%
 )
 
@@ -103,15 +135,20 @@ if "%BUILD_OPENCV%" == "1" (
     rem now will build for opencv
     cd %ROOT_DIR%opencv_contrib
     git checkout %OPENCV_CONTRIB_BRANCH%
-    if not "%ERRORLEVEL%" == "0" goto ERROR
-    
+    if not "!ERRORLEVEL!" == "0" (
+      echo "checkout for opencv_contrib error"
+      goto ERROR
+    )
+
     cd %ROOT_DIR%opencv
     git checkout %OPENCV_BRANCH%
-    if not "%ERRORLEVEL%" == "0" goto ERROR
-    
+    if not "!ERRORLEVEL!" == "0" (
+      echo "checkout for opencv error"
+      goto ERROR
+    )
+
     mkdir build_%BUILD_TYPE%
     cd build_%BUILD_TYPE%
-    if not "%ERRORLEVEL%" == "0" goto ERROR
 
     cmake ^
         -G %CMAKE_GENERATOR% ^
@@ -127,7 +164,7 @@ if "%BUILD_OPENCV%" == "1" (
         -DPYTHON3_INCLUDE_DIR=%PYTHON_PATH%/include ^
         -DPYTHON3_EXECUTABLE=%PYTHON_PATH%/python.exe ^
         -DPYTHON3_PACKAGES_PATH=%PYTHON_PATH%/lib/site-packages ^
-        -DPYTHON3_LIBRARY=%PYTHON_PATH%/libs/python36.lib ^
+        -DPYTHON3_LIBRARY=%PYTHON_PATH%/libs/%PYTHON_LIB_NAME% ^
         -DPYTHON3_NUMPY_INCLUDE_DIRS=%PYTHON_PATH%/Lib/site-packages/numpy/core/include ^
         -DINSTALL_PYTHON_EXAMPLES=OFF ^
         -DBUILD_TESTS=OFF ^
@@ -135,30 +172,46 @@ if "%BUILD_OPENCV%" == "1" (
         -DWITH_IPP=OFF ^
         ..
 
-    if not "%ERRORLEVEL%" == "0" goto ERROR
-
+    if not "!ERRORLEVEL!" == "0" (
+      echo "cmake for opencv error"
+      goto ERROR
+    )
     cmake --build . --config %BUILD_TYPE% --target INSTALL
-    if not "%ERRORLEVEL%" == "0" goto ERROR
-    
+    if not "!ERRORLEVEL!" == "0" (
+      echo "build for opencv error"
+      goto ERROR
+    )
+
     cd %ROOT_DIR%
 )
 
 if "%BUILD_VMAF%" == "1" (
-      cd vmaf
-      git checkout %VMAF_BRANCH%
-      if not "%ERRORLEVEL%" == "0" goto ERROR
+    cd vmaf
+    git checkout %VMAF_BRANCH%
+    if not "!ERRORLEVEL!" == "0" (
+      echo "checkout for vmaf error"
+      goto ERROR
+    )
 
-      %VS_DEVENV% vmaf.sln /build "%BUILD_TYPE%|x64"
-      if not "%ERRORLEVEL%" == "0" goto ERROR
+    %VS_DEVENV% vmaf.sln /build "%BUILD_TYPE%|x64"
+    if not "!ERRORLEVEL!" == "0" (
+      echo "build for vmaf error"
+      goto ERROR
+    )
       
-      mkdir %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
-      xcopy /v /y wrapper\src\libvmaf.h %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
-      if not "%ERRORLEVEL%" == "0" goto ERROR
+    mkdir %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
+    xcopy /v /y wrapper\src\libvmaf.h %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
+    if not "!ERRORLEVEL!" == "0" (
+      echo "copy for libvmaf.h error"
+      goto ERROR
+    )
 
-      xcopy /v /y x64\%BUILD_TYPE%\*.lib %ROOT_DIR%result\win\%BUILD_TYPE%\lib
-      if not "%ERRORLEVEL%" == "0" goto ERROR
-
-      cd %ROOT_DIR%
+    xcopy /v /y x64\%BUILD_TYPE%\*.lib %ROOT_DIR%result\win\%BUILD_TYPE%\lib
+    if not "!ERRORLEVEL!" == "0" (
+      echo "copy for vmaf libraries error"
+      goto ERROR
+    )
+    cd %ROOT_DIR%
 )
 
 goto DONE
@@ -168,7 +221,6 @@ cd %ROOT_DIR%
 endlocal
 @echo on
 @echo autobuild.cmd failed
-pause
 @exit /b 1
 
 
