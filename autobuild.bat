@@ -12,6 +12,7 @@ set BUILD_TYPE=Release
 
 set CMAKE_GENERATOR="Visual Studio 14 2015 Win64"
 set VS_DEVENV="%VS140COMNTOOLS%/../IDE/devenv.com"
+set PYTHON_PATH=D:/Python36
 
 set BUILD_LEPTONICA=1
 set LEPTONICA_BRANCH=branch_1.74.4
@@ -119,10 +120,19 @@ if "%BUILD_OPENCV%" == "1" (
         -DOPENCV_EXTRA_MODULES_PATH=%ROOT_DIR%opencv_contrib\modules ^
         -DOPENCV_ENABLE_NONFREE=ON ^
         -DBUILD_SHARED_LIBS=ON ^
-        -DBUILD_WITH_STATIC_CRT=ON ^
+        -DBUILD_WITH_STATIC_CRT=OFF ^
         -DBUILD_opencv_world=ON ^
+        -DBUILD_opencv_python2=OFF ^
+        -DBUILD_opencv_python3=ON ^
+        -DPYTHON3_INCLUDE_DIR=%PYTHON_PATH%/include ^
+        -DPYTHON3_EXECUTABLE=%PYTHON_PATH%/python.exe ^
+        -DPYTHON3_PACKAGES_PATH=%PYTHON_PATH%/lib/site-packages ^
+        -DPYTHON3_LIBRARY=%PYTHON_PATH%/libs/python36.lib ^
+        -DPYTHON3_NUMPY_INCLUDE_DIRS=%PYTHON_PATH%/Lib/site-packages/numpy/core/include ^
+        -DINSTALL_PYTHON_EXAMPLES=OFF ^
         -DBUILD_TESTS=OFF ^
         -DBUILD_EXAMPLES=OFF ^
+        -DWITH_IPP=OFF ^
         ..
 
     if not "%ERRORLEVEL%" == "0" goto ERROR
