@@ -3,8 +3,12 @@ setlocal enabledelayedexpansion
 
 rem ###############################################################################
 rem usage:
-rem   autobuild [build_type]
+rem   autobuild.bat [build_type] > build.log 2>&1
 rem      build_type: [Release] | Debug
+rem   then use tail -f build.log to check the build log
+rem     https://ericwengrowski.com/pycv/
+rem  TODO: D:\Anaconda3;D:\Anaconda3\Library\mingw-w64\bin;D:\Anaconda3\Library\usr\bin;
+rem     D:\Anaconda3\Library\bin;D:\Anaconda3\Scripts
 rem ###############################################################################
 
 set ROOT_DIR=%~dp0
@@ -24,11 +28,13 @@ set LEPTONICA_BRANCH=branch_1.74.4
 set BUILD_TESSERACT=1
 set TESSERACT_BRANCH=3.05
 set BUILD_OPENCV=1
-set OPENCV_BRANCH=branch_3.4.2_fixbug
-set OPENCV_CONTRIB_BRANCH=3.4.2
-set BUILD_VMAF=1
+rem set OPENCV_BRANCH=branch_3.4.2_fixbug
+rem set OPENCV_CONTRIB_BRANCH=3.4.2
+set OPENCV_BRANCH=branch_4.3.0
+set OPENCV_CONTRIB_BRANCH=branch_4.3.0
+set BUILD_OPENCV_PYTHON=1
+set BUILD_VMAF=0
 set VMAF_BRANCH=dynamic_win
-
 
 
 if "%BUILD_LEPTONICA%" == "1" (
@@ -64,6 +70,7 @@ if "%BUILD_LEPTONICA%" == "1" (
     cd %ROOT_DIR%leptonica\libs\lpng1637
     mkdir build_%BUILD_TYPE%
     cd build_%BUILD_TYPE%
+    echo "now will call cmake for lpng"
     cmake ^
         -G %CMAKE_GENERATOR% ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
@@ -74,6 +81,7 @@ if "%BUILD_LEPTONICA%" == "1" (
       goto ERROR
     )
 
+    echo "now will build for lpng"
     cmake --build . --config %BUILD_TYPE% --target INSTALL
     if not "!ERRORLEVEL!" == "0" (
       echo "build for lpng error"
@@ -87,6 +95,7 @@ if "%BUILD_LEPTONICA%" == "1" (
 
     cmake ^
         -G %CMAKE_GENERATOR% ^
+        -DNO_SYSTEM_ENVIRONMENT_PATH=ON ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
         -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
         ..
@@ -150,6 +159,8 @@ if "%BUILD_OPENCV%" == "1" (
     mkdir build_%BUILD_TYPE%
     cd build_%BUILD_TYPE%
 
+    echo "now will cmake for opencv"
+    rem -DPYTHON3_PACKAGES_PATH=%PYTHON_PATH%/lib/site-packages ^
     cmake ^
         -G %CMAKE_GENERATOR% ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
@@ -163,7 +174,7 @@ if "%BUILD_OPENCV%" == "1" (
         -DBUILD_opencv_python3=ON ^
         -DPYTHON3_INCLUDE_DIR=%PYTHON_PATH%/include ^
         -DPYTHON3_EXECUTABLE=%PYTHON_PATH%/python.exe ^
-        -DPYTHON3_PACKAGES_PATH=%PYTHON_PATH%/lib/site-packages ^
+        -DPYTHON3_PACKAGES_PATH=%ROOT_DIR%result/win/%BUILD_TYPE%/python_packages ^
         -DPYTHON3_LIBRARY=%PYTHON_PATH%/libs/%PYTHON_LIB_NAME% ^
         -DPYTHON3_NUMPY_INCLUDE_DIRS=%PYTHON_PATH%/Lib/site-packages/numpy/core/include ^
         -DINSTALL_PYTHON_EXAMPLES=OFF ^
@@ -176,6 +187,8 @@ if "%BUILD_OPENCV%" == "1" (
       echo "cmake for opencv error"
       goto ERROR
     )
+
+    echo "now will build for opencv"
     cmake --build . --config %BUILD_TYPE% --target INSTALL
     if not "!ERRORLEVEL!" == "0" (
       echo "build for opencv error"
