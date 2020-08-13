@@ -12,8 +12,15 @@ rem     D:\Anaconda3\Library\bin;D:\Anaconda3\Scripts
 rem ###############################################################################
 
 set ROOT_DIR=%~dp0
-set BUILD_TYPE=Release
+
+rem change "\\" to "/" for python path
+set ROOT_DIR_SLASH=%ROOT_DIR:\=/%
+echo %ROOT_DIR_SLASH%
+
+set BUILD_TYPE=Debug
 if not "%1" == "" set BUILD_TYPE=%1
+set RESULT_OUTPUT=%ROOT_DIR%result\win\%BUILD_TYPE%
+set RESULT_OUTPUT_SLASH=%ROOT_DIR_SLASH%result/win/%BUILD_TYPE%
 
 set CMAKE_GENERATOR="Visual Studio 14 2015 Win64"
 set VS_DEVENV="%VS140COMNTOOLS%/../IDE/devenv.com"
@@ -23,9 +30,9 @@ if "%BUILD_TYPE%" == "Debug" set PYTHON_LIB_NAME=python38_d.lib
 if "%BUILD_TYPE%" == "Release" set PYTHON_LIB_NAME=python38.lib
 echo "python library value is %PYTHON_PATH%/libs/%PYTHON_LIB_NAME%"
 
-set BUILD_LEPTONICA=1
+set BUILD_LEPTONICA=0
 set LEPTONICA_BRANCH=branch_1.74.4
-set BUILD_TESSERACT=1
+set BUILD_TESSERACT=0
 set TESSERACT_BRANCH=3.05
 set BUILD_OPENCV=1
 rem set OPENCV_BRANCH=branch_3.4.2_fixbug
@@ -35,7 +42,8 @@ set OPENCV_CONTRIB_BRANCH=branch_4.3.0
 set BUILD_OPENCV_PYTHON=1
 set BUILD_VMAF=0
 set VMAF_BRANCH=dynamic_win
-
+rem set CMAKE_COMMON_OPTS=-Wdev --trace
+set CMAKE_COMMON_OPTS=
 
 if "%BUILD_LEPTONICA%" == "1" (
     rem now will build for leptonica
@@ -53,7 +61,7 @@ if "%BUILD_LEPTONICA%" == "1" (
     cmake ^
         -G %CMAKE_GENERATOR% ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
-        -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
+        -DCMAKE_INSTALL_PREFIX=%RESULT_OUTPUT% ^
         ..
     if not "!ERRORLEVEL!" == "0" (
       echo "cmake for zlib error"
@@ -74,7 +82,7 @@ if "%BUILD_LEPTONICA%" == "1" (
     cmake ^
         -G %CMAKE_GENERATOR% ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
-        -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
+        -DCMAKE_INSTALL_PREFIX=%RESULT_OUTPUT% ^
         ..
     if not "!ERRORLEVEL!" == "0" (
       echo "cmake for lpng error"
@@ -97,7 +105,7 @@ if "%BUILD_LEPTONICA%" == "1" (
         -G %CMAKE_GENERATOR% ^
         -DNO_SYSTEM_ENVIRONMENT_PATH=ON ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
-        -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
+        -DCMAKE_INSTALL_PREFIX=%RESULT_OUTPUT% ^
         ..
     if not "!ERRORLEVEL!" == "0" (
       echo "cmake for leptonica error"
@@ -124,7 +132,7 @@ if "%BUILD_TESSERACT%" == "1" (
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
         -DBUILD_TRAINING_TOOLS=OFF ^
         -DLeptonica_Dir=%ROOT_DIR%result\win\cmake ^
-        -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
+        -DCMAKE_INSTALL_PREFIX=%RESULT_OUTPUT% ^
         ..
     if not "!ERRORLEVEL!" == "0" (
       echo "cmake for tesseract error"
@@ -161,10 +169,10 @@ if "%BUILD_OPENCV%" == "1" (
 
     echo "now will cmake for opencv"
     rem -DPYTHON3_PACKAGES_PATH=%PYTHON_PATH%/lib/site-packages ^
-    cmake ^
+    cmake %CMAKE_COMMON_OPTS% ^
         -G %CMAKE_GENERATOR% ^
         -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
-        -DCMAKE_INSTALL_PREFIX=%ROOT_DIR%result\win\%BUILD_TYPE% ^
+        -DCMAKE_INSTALL_PREFIX=%RESULT_OUTPUT% ^
         -DOPENCV_EXTRA_MODULES_PATH=%ROOT_DIR%opencv_contrib\modules ^
         -DOPENCV_ENABLE_NONFREE=ON ^
         -DBUILD_SHARED_LIBS=ON ^
@@ -172,9 +180,10 @@ if "%BUILD_OPENCV%" == "1" (
         -DBUILD_opencv_world=ON ^
         -DBUILD_opencv_python2=OFF ^
         -DBUILD_opencv_python3=ON ^
+        -DPYTHON_EXECUTABLE:FILEPATH=%PYTHON_PATH%/python.exe ^
+        -DPYTHON3_PACKAGES_PATH=%PYTHON_PATH%/Lib/site-packages ^
         -DPYTHON3_INCLUDE_DIR=%PYTHON_PATH%/include ^
         -DPYTHON3_EXECUTABLE=%PYTHON_PATH%/python.exe ^
-        -DPYTHON3_PACKAGES_PATH=%ROOT_DIR%result/win/%BUILD_TYPE%/python_packages ^
         -DPYTHON3_LIBRARY=%PYTHON_PATH%/libs/%PYTHON_LIB_NAME% ^
         -DPYTHON3_NUMPY_INCLUDE_DIRS=%PYTHON_PATH%/Lib/site-packages/numpy/core/include ^
         -DINSTALL_PYTHON_EXAMPLES=OFF ^
@@ -212,14 +221,14 @@ if "%BUILD_VMAF%" == "1" (
       goto ERROR
     )
       
-    mkdir %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
-    xcopy /v /y wrapper\src\libvmaf.h %ROOT_DIR%result\win\%BUILD_TYPE%\include\vmaf
+    mkdir %RESULT_OUTPUT%\include\vmaf
+    xcopy /v /y wrapper\src\libvmaf.h %RESULT_OUTPUT%\include\vmaf
     if not "!ERRORLEVEL!" == "0" (
       echo "copy for libvmaf.h error"
       goto ERROR
     )
 
-    xcopy /v /y x64\%BUILD_TYPE%\*.lib %ROOT_DIR%result\win\%BUILD_TYPE%\lib
+    xcopy /v /y x64\%BUILD_TYPE%\*.lib %RESULT_OUTPUT%\lib
     if not "!ERRORLEVEL!" == "0" (
       echo "copy for vmaf libraries error"
       goto ERROR
