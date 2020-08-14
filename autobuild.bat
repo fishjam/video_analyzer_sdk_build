@@ -30,9 +30,9 @@ if "%BUILD_TYPE%" == "Debug" set PYTHON_LIB_NAME=python38_d.lib
 if "%BUILD_TYPE%" == "Release" set PYTHON_LIB_NAME=python38.lib
 echo "python library value is %PYTHON_PATH%/libs/%PYTHON_LIB_NAME%"
 
-set BUILD_LEPTONICA=0
+set BUILD_LEPTONICA=1
 set LEPTONICA_BRANCH=branch_1.74.4
-set BUILD_TESSERACT=0
+set BUILD_TESSERACT=1
 set TESSERACT_BRANCH=3.05
 set BUILD_OPENCV=1
 rem set OPENCV_BRANCH=branch_3.4.2_fixbug
@@ -40,7 +40,7 @@ rem set OPENCV_CONTRIB_BRANCH=3.4.2
 set OPENCV_BRANCH=branch_4.3.0
 set OPENCV_CONTRIB_BRANCH=branch_4.3.0
 set BUILD_OPENCV_PYTHON=1
-set BUILD_VMAF=0
+set BUILD_VMAF=1
 set VMAF_BRANCH=dynamic_win
 rem set CMAKE_COMMON_OPTS=-Wdev --trace
 set CMAKE_COMMON_OPTS=
@@ -179,9 +179,9 @@ if "%BUILD_OPENCV%" == "1" (
         -DBUILD_WITH_STATIC_CRT=OFF ^
         -DBUILD_opencv_world=ON ^
         -DBUILD_opencv_python2=OFF ^
-        -DBUILD_opencv_python3=ON ^
+        -DBUILD_opencv_python3=OFF ^
         -DPYTHON_EXECUTABLE:FILEPATH=%PYTHON_PATH%/python.exe ^
-        -DPYTHON3_PACKAGES_PATH=%PYTHON_PATH%/Lib/site-packages ^
+        -DPYTHON3_PACKAGES_PATH=%RESULT_OUTPUT%/python/site-packages ^
         -DPYTHON3_INCLUDE_DIR=%PYTHON_PATH%/include ^
         -DPYTHON3_EXECUTABLE=%PYTHON_PATH%/python.exe ^
         -DPYTHON3_LIBRARY=%PYTHON_PATH%/libs/%PYTHON_LIB_NAME% ^
